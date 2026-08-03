@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TaxiGo — Technical Diagrams</title>
+
+  <!-- Mermaid.js -->
+  <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+  <!-- jsPDF for PDF export -->
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      securityLevel: 'loose',
+      theme: 'default',
+      fontFamily: 'Inter, Segoe UI, sans-serif',
+      flowchart: { curve: 'basis', padding: 20, htmlLabels: false },
+      sequence:  { actorMargin: 60, messageMargin: 40, mirrorActors: false },
+      er:        { diagramPadding: 30, htmlLabels: false },
+    });
+  </script>
+
+  <!-- Google Font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <style>
+    /* ── Reset & base ─────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:          #f0f4ff;
+      --card:        #ffffff;
+      --accent:      #4F8EF7;
+      --accent-dark: #2563EB;
+      --heading:     #0f172a;
+      --sub:         #475569;
+      --border:      #e2e8f0;
+      --shadow:      0 4px 24px rgba(79,142,247,.10), 0 1px 4px rgba(0,0,0,.06);
+      --radius:      18px;
+    }
+
+    body {
+      font-family: 'Inter', 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--heading);
+      min-height: 100vh;
+      padding: 0 0 64px;
+    }
+
+    /* ── Hero ─────────────────────────────────────────────────── */
+    .hero {
+      background: linear-gradient(135deg, #1e3a8a 0%, #2563EB 50%, #4F8EF7 100%);
+      color: #fff;
+      padding: 52px 32px 44px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255,255,255,.15);
+      border: 1px solid rgba(255,255,255,.25);
+      border-radius: 100px;
+      padding: 6px 18px;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: .8px;
+      text-transform: uppercase;
+      margin-bottom: 18px;
+    }
+    .hero h1 {
+      font-size: clamp(28px, 5vw, 48px);
+      font-weight: 800;
+      letter-spacing: -1px;
+      line-height: 1.15;
+      margin-bottom: 10px;
+    }
+    .hero p {
+      font-size: 16px;
+      opacity: .8;
+      max-width: 520px;
+      margin: 0 auto;
+      line-height: 1.6;
+    }
+
+    /* ── TOC ──────────────────────────────────────────────────── */
+    .toc {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
+      padding: 32px 24px 0;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+    .toc a {
+      background: var(--card);
+      color: var(--accent-dark);
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      padding: 8px 18px;
+      font-size: 13px;
+      font-weight: 600;
+      text-decoration: none;
+      transition: background .15s, border-color .15s;
+    }
+    .toc a:hover { background: #eff6ff; border-color: var(--accent); }
+
+    /* ── Layout ───────────────────────────────────────────────── */
+    .page-wrap {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+    .diagram-section { margin-top: 40px; }
+
+    /* ── Card ─────────────────────────────────────────────────── */
+    .card {
+      background: var(--card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border);
+      overflow: hidden;
+      margin-bottom: 40px;
+    }
+    .card-header {
+      padding: 24px 32px 18px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+    }
+    .card-icon {
+      width: 48px; height: 48px;
+      border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px; flex-shrink: 0;
+    }
+    .card-icon.blue   { background: #eff6ff; }
+    .card-icon.purple { background: #f5f3ff; }
+    .card-icon.green  { background: #f0fdf4; }
+    .card-icon.orange { background: #fff7ed; }
+
+    .card-title-wrap { flex: 1; }
+    .card-number {
+      font-size: 11px; font-weight: 700;
+      letter-spacing: 1.2px; text-transform: uppercase;
+      color: var(--accent); margin-bottom: 4px;
+    }
+    .card-title { font-size: 20px; font-weight: 800; color: var(--heading); margin-bottom: 5px; }
+    .card-desc  { font-size: 13px; color: var(--sub); line-height: 1.5; }
+
+    .card-body { padding: 32px; overflow-x: auto; }
+
+    /* ── Mermaid ──────────────────────────────────────────────── */
+    pre.mermaid {
+      display: flex;
+      justify-content: center;
+      background: transparent;
+      border: none;
+      padding: 0;
+    }
+    pre.mermaid svg { max-width: 100%; height: auto; }
+
+    /* ── Legend chips ─────────────────────────────────────────── */
+    .legend {
+      display: flex; flex-wrap: wrap; gap: 8px;
+      padding: 0 32px 20px;
+    }
+    .chip {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: #f8fafc; border: 1px solid var(--border);
+      border-radius: 100px; padding: 4px 14px;
+      font-size: 12px; font-weight: 500; color: var(--sub);
+    }
+    .chip-dot { width: 8px; height: 8px; border-radius: 50%; }
+
+    /* ── Download toolbar ─────────────────────────────────────── */
+    .dl-bar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 32px 22px;
+      border-top: 1px solid var(--border);
+      background: #fafbff;
+    }
+    .dl-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--sub);
+      text-transform: uppercase;
+      letter-spacing: .8px;
+      margin-right: 4px;
+    }
+
+    /* PNG button */
+    .btn-png {
+      display: inline-flex; align-items: center; gap: 7px;
+      background: var(--accent);
+      color: #fff;
+      border: none; border-radius: 10px;
+      padding: 9px 20px;
+      font-size: 13px; font-weight: 700;
+      cursor: pointer;
+      font-family: inherit;
+      box-shadow: 0 2px 8px rgba(79,142,247,.35);
+      transition: transform .13s, box-shadow .13s, background .13s;
+    }
+    .btn-png:hover  { background: var(--accent-dark); transform: translateY(-1px); box-shadow: 0 4px 14px rgba(79,142,247,.45); }
+    .btn-png:active { transform: translateY(0); }
+
+    /* PDF button */
+    .btn-pdf {
+      display: inline-flex; align-items: center; gap: 7px;
+      background: #fff;
+      color: #dc2626;
+      border: 1.5px solid #fca5a5;
+      border-radius: 10px;
+      padding: 9px 20px;
+      font-size: 13px; font-weight: 700;
+      cursor: pointer;
+      font-family: inherit;
+      transition: transform .13s, box-shadow .13s, border-color .13s, background .13s;
+    }
+    .btn-pdf:hover  { background: #fff1f2; border-color: #dc2626; transform: translateY(-1px); box-shadow: 0 4px 14px rgba(220,38,38,.15); }
+    .btn-pdf:active { transform: translateY(0); }
+
+    .btn-png svg, .btn-pdf svg { width: 15px; height: 15px; flex-shrink: 0; }
+
+    /* Loading spinner on buttons */
+    .btn-spinning { opacity: .7; pointer-events: none; }
+    .btn-spinning::after {
+      content: '';
+      display: inline-block;
+      width: 12px; height: 12px;
+      border: 2px solid currentColor;
+      border-top-color: transparent;
+      border-radius: 50%;
+      animation: spin .6s linear infinite;
+      margin-left: 6px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Footer ───────────────────────────────────────────────── */
+    .footer {
+      text-align: center; padding: 40px 24px 0;
+      font-size: 12px; color: #94a3b8;
+    }
+
+    /* ── Print styles ─────────────────────────────────────────── */
+    @media print {
+      body { background: #fff; padding: 0; }
+      .hero { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+      .toc, .dl-bar { display: none !important; }
+      .card { box-shadow: none; border: 1px solid #e2e8f0; break-inside: avoid; }
+      .card-body { padding: 16px; }
+      .page-wrap { max-width: 100%; padding: 0 12px; }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- ── Hero ────────────────────────────────────────────────────── -->
+  <div class="hero">
+    <div class="hero-badge">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+      TaxiGo · Technical Documentation
+    </div>
+    <h1>System Architecture Diagrams</h1>
+    <p>Use Case · Entity-Relationship · Sequence · State Machine</p>
+  </div>
+
+  <!-- ── TOC ─────────────────────────────────────────────────────── -->
+  <nav class="toc">
+    <a href="#usecase">① Use Case Diagram</a>
+    <a href="#er">② ER Diagram</a>
+    <a href="#sequence">③ Sequence Diagram</a>
+    <a href="#statemachine">④ State Machine</a>
+  </nav>
+
+  <!-- ── Main content ────────────────────────────────────────────── -->
+  <div class="page-wrap">
+    <div class="diagram-section">
+
+      <!-- ① USE CASE ──────────────────────────────────────────────── -->
+      <div class="card" id="usecase">
+        <div class="card-header">
+          <div class="card-icon blue">👤</div>
+          <div class="card-title-wrap">
+            <div class="card-number">Diagram 01</div>
+            <div class="card-title">Use Case Diagram</div>
+            <div class="card-desc">All actors (Customer, Driver, Admin, Supabase System) and their interactions with the TaxiGo platform, grouped by actor domain.</div>
+          </div>
+        </div>
+        <div class="card-body">
+          <pre class="mermaid" id="svg-usecase">
+graph TD
+
+    C(["👤 Customer"])
+    D(["🚗 Driver"])
+    A(["🛡️ Admin"])
+    S(["⚙️ Supabase"])
+
+    subgraph CUST["Customer Use Cases"]
+        direction TB
+        UC1["Register / Sign In"]
+        UC7["Search & Geocode Address"]
+        UC8["Select Vehicle Type"]
+        UC9["View Fare Estimate"]
+        UC10["Book a Ride"]
+        UC11["Cancel Ride"]
+        UC13["Track Driver on Map"]
+        UC14["Fetch OSRM Route"]
+        UC19["Select Payment Method"]
+        UC21["Rate Driver"]
+    end
+
+    subgraph DRV["Driver Use Cases"]
+        direction TB
+        UC27["Step 1 — Personal Info"]
+        UC28["Step 2 — Vehicle Details"]
+        UC29["Step 3 — Upload Docs"]
+        UC30["auth.signUp + OTP Email"]
+        UC2["Verify 8-Digit OTP"]
+        UC12["Broadcast GPS Live"]
+        UC15["Accept Ride Request"]
+        UC16["Mark Arrived at Pickup"]
+        UC17["Start Trip"]
+        UC18["Complete Trip"]
+        UC20["Confirm Cash Received"]
+    end
+
+    subgraph ADM["Admin Use Cases"]
+        direction TB
+        UC4["Admin Portal Login"]
+        UC22["View Pending Drivers"]
+        UC23["View Documents"]
+        UC24["Generate Signed URLs"]
+        UC25["Approve Driver"]
+        UC26["Reject Driver"]
+    end
+
+    subgraph SYS["Supabase System"]
+        direction TB
+        UC5["Send OTP via Resend SMTP"]
+        UC6["Validate OTP Token"]
+        UC31["Enforce RLS Policies"]
+        UC32["Stream Realtime Events"]
+    end
+
+    C --> CUST
+    D --> DRV
+    A --> ADM
+    S --> SYS
+
+    UC29  -.->|"triggers"| UC30
+    UC30  --> UC5
+    UC2   --> UC6
+    UC23  --> UC24
+    UC13  -.->|"uses"| UC14
+    UC10  -.->|"realtime"| UC32
+    UC12  -.->|"realtime"| UC32
+          </pre>
+        </div>
+        <div class="legend">
+          <div class="chip"><div class="chip-dot" style="background:#4F8EF7"></div>Solid arrow = direct interaction</div>
+          <div class="chip"><div class="chip-dot" style="background:#94a3b8"></div>Dotted = include / uses relationship</div>
+          <div class="chip"><div class="chip-dot" style="background:#10b981"></div>Subgraphs = actor-grouped domains</div>
+        </div>
+        <div class="dl-bar">
+          <span class="dl-label">Download:</span>
+          <button class="btn-png" onclick="downloadPNG('svg-usecase','use_case_diagram')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M8 12l2.5 2.5L16 9"/></svg>
+            Download PNG
+          </button>
+          <button class="btn-pdf" onclick="downloadPDF('svg-usecase','use_case_diagram','Use Case Diagram')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+            Download PDF
+          </button>
+        </div>
+      </div>
+
+      <!-- ② ER DIAGRAM ─────────────────────────────────────────────── -->
+      <div class="card" id="er">
+        <div class="card-header">
+          <div class="card-icon purple">🗄️</div>
+          <div class="card-title-wrap">
+            <div class="card-number">Diagram 02</div>
+            <div class="card-title">Entity-Relationship (ER) Diagram</div>
+            <div class="card-desc">All Supabase PostgreSQL tables — <code>auth.users</code>, <code>drivers</code>, <code>vehicles</code>, <code>rides</code>, <code>customers</code> — with exact column names, types, PKs, FKs, and cardinalities.</div>
+          </div>
+        </div>
+        <div class="card-body">
+          <pre class="mermaid" id="svg-er">
+erDiagram
+    AUTH_USERS {
+        uuid        id                   PK
+        text        email
+        timestamptz created_at
+        timestamptz email_confirmed_at
+    }
+
+    DRIVERS {
+        uuid        id                   PK
+        uuid        user_id              FK
+        text        full_name
+        text        phone
+        text        nic_number
+        text        email
+        text        status
+        float8      location_latitude
+        float8      location_longitude
+        timestamptz created_at
+    }
+
+    VEHICLES {
+        uuid        id                   PK
+        uuid        driver_id            FK
+        text        vehicle_type
+        text        brand
+        text        model
+        text        plate_number
+        text        color
+        integer     production_year
+        timestamptz created_at
+    }
+
+    RIDES {
+        uuid        id                   PK
+        uuid        customer_id          FK
+        uuid        driver_id            FK
+        text        pickup_name
+        float8      pickup_latitude
+        float8      pickup_longitude
+        text        drop_name
+        float8      drop_latitude
+        float8      drop_longitude
+        text        vehicle_type
+        float8      fare
+        text        status
+        float8      driver_latitude
+        float8      driver_longitude
+        text        payment_method
+        text        payment_status
+        timestamptz created_at
+    }
+
+    CUSTOMERS {
+        uuid        id                   PK
+        uuid        user_id              FK
+        text        full_name
+        text        email
+        timestamptz created_at
+    }
+
+    DRIVER_DOCUMENTS {
+        uuid        driver_id            FK
+        text        license_front_url
+        text        license_back_url
+        text        nic_url
+        text        revenue_license_url
+    }
+
+    AUTH_USERS ||--o| DRIVERS           : "1 user → 0-1 driver profile"
+    AUTH_USERS ||--o| CUSTOMERS         : "1 user → 0-1 customer profile"
+    DRIVERS    ||--|| VEHICLES          : "1 driver → 1 vehicle"
+    DRIVERS    ||--|| DRIVER_DOCUMENTS  : "1 driver → 4 docs"
+    AUTH_USERS ||--o{ RIDES             : "customer books N rides"
+    AUTH_USERS ||--o{ RIDES             : "driver accepts N rides"
+          </pre>
+        </div>
+        <div class="legend">
+          <div class="chip"><div class="chip-dot" style="background:#8b5cf6"></div>PK = Primary Key</div>
+          <div class="chip"><div class="chip-dot" style="background:#f59e0b"></div>FK = Foreign Key</div>
+          <div class="chip"><div class="chip-dot" style="background:#10b981"></div>DRIVER_DOCUMENTS = Storage bucket</div>
+          <div class="chip"><div class="chip-dot" style="background:#ef4444"></div>rides.driver_id nullable until accepted</div>
+        </div>
+        <div class="dl-bar">
+          <span class="dl-label">Download:</span>
+          <button class="btn-png" onclick="downloadPNG('svg-er','er_diagram')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M8 12l2.5 2.5L16 9"/></svg>
+            Download PNG
+          </button>
+          <button class="btn-pdf" onclick="downloadPDF('svg-er','er_diagram','ER Diagram')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+            Download PDF
+          </button>
+        </div>
+      </div>
+
+      <!-- ③ SEQUENCE DIAGRAM ───────────────────────────────────────── -->
+      <div class="card" id="sequence">
+        <div class="card-header">
+          <div class="card-icon green">🔁</div>
+          <div class="card-title-wrap">
+            <div class="card-number">Diagram 03</div>
+            <div class="card-title">Sequence Diagram — Deferred signUp Auth Architecture</div>
+            <div class="card-desc">Why <code>auth.signUp()</code> is called at Step 3 (document upload), not Step 1 — so the 8-digit OTP email arrives moments before the driver sees the OTP input screen.</div>
+          </div>
+        </div>
+        <div class="card-body">
+          <pre class="mermaid" id="svg-sequence">
+sequenceDiagram
+    autonumber
+    participant U  as 🧑 Driver
+    participant F  as 📱 Flutter App
+    participant SB as 🔐 Supabase Auth
+    participant DB as 🗄️ Supabase DB
+    participant ST as 📦 Supabase Storage
+    participant EM as 📧 Resend Email
+
+    Note over U,F: STEP 1 — Personal Info
+    U->>F: Fill name, phone, NIC, email, password
+    F->>F: Validate form only — NO Supabase call
+    F->>U: Navigate to Step 2
+
+    Note over U,F: STEP 2 — Vehicle Details
+    U->>F: Fill vehicle type, brand, model, plate, year
+    F->>F: Carry all data in route arguments
+    F->>U: Navigate to Step 3
+
+    Note over U,F: STEP 3 — Document Upload + SUBMIT
+    U->>F: Upload 4 documents
+    U->>F: Tap Submit
+
+    F->>SB: auth.signUp(email, password)
+    SB-->>EM: Dispatch 8-digit OTP email via Resend SMTP
+    SB-->>F: { user: { id: "uuid-..." } }
+
+    F->>DB: INSERT INTO drivers (user_id, name, phone, nic, status)
+    DB-->>F: { id: "driver-uuid" }
+
+    F->>DB: INSERT INTO vehicles (driver_id, type, brand, model, plate...)
+    DB-->>F: { id: "vehicle-uuid" }
+
+    F->>ST: Upload license_front.jpg
+    F->>ST: Upload license_back.jpg
+    F->>ST: Upload nic.jpg
+    F->>ST: Upload revenue_license.jpg
+    ST-->>F: Public URLs returned
+
+    F->>U: Show success dialog → Navigate to OTP Screen
+
+    Note over U,EM: OTP arrives in inbox at this moment ✓
+
+    Note over U,F: STEP 4 — OTP Verification
+    U->>F: Enter 8-digit code from email
+    F->>SB: auth.verifyOTP(email, token, type: signup)
+    SB-->>F: Session confirmed ✓
+    F->>U: Navigate to Login screen
+          </pre>
+        </div>
+        <div class="legend">
+          <div class="chip"><div class="chip-dot" style="background:#10b981"></div>signUp deferred to Step 3 — token always fresh</div>
+          <div class="chip"><div class="chip-dot" style="background:#4F8EF7"></div>OTP type must be OtpType.signup</div>
+          <div class="chip"><div class="chip-dot" style="background:#f59e0b"></div>Resend SMTP bypasses Supabase rate limit</div>
+        </div>
+        <div class="dl-bar">
+          <span class="dl-label">Download:</span>
+          <button class="btn-png" onclick="downloadPNG('svg-sequence','sequence_diagram')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M8 12l2.5 2.5L16 9"/></svg>
+            Download PNG
+          </button>
+          <button class="btn-pdf" onclick="downloadPDF('svg-sequence','sequence_diagram','Sequence Diagram')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+            Download PDF
+          </button>
+        </div>
+      </div>
+
+      <!-- ④ STATE MACHINE ──────────────────────────────────────────── -->
+      <div class="card" id="statemachine">
+        <div class="card-header">
+          <div class="card-icon orange">🔄</div>
+          <div class="card-title-wrap">
+            <div class="card-number">Diagram 04</div>
+            <div class="card-title">State Machine — Ride Lifecycle</div>
+            <div class="card-desc">Every possible state of the <code>rides.status</code> column, and the exact app action that triggers each transition, streamed live via Supabase Realtime.</div>
+          </div>
+        </div>
+        <div class="card-body">
+          <pre class="mermaid" id="svg-statemachine">
+stateDiagram-v2
+    direction LR
+
+    [*] --> pending       : 📍 Customer books ride\n(INSERT into rides)
+
+    pending --> accepted  : 🚗 Driver taps Accept\n(UPDATE status + driver_id)
+    pending --> cancelled : ❌ Customer cancels\n(UPDATE status)
+
+    accepted --> arrived  : 📌 Driver taps Arrived\n(UPDATE status)
+
+    arrived --> in_progress : 🚦 Driver taps Start Trip\n(UPDATE status)
+
+    in_progress --> completed : 🏁 Driver taps Complete\n(UPDATE status, stop GPS)
+
+    completed --> paid_cash  : 💵 Customer selects Cash\n+ Driver confirms receipt\n(UPDATE payment_method + payment_status)
+    completed --> paid_card  : 💳 Customer selects Card\n(UPDATE payment_method + payment_status)
+
+    paid_cash --> rated      : ⭐ Customer rates driver
+    paid_card --> rated      : ⭐ Customer rates driver
+
+    rated     --> [*]
+    cancelled --> [*]
+          </pre>
+        </div>
+   <script>
+    /**
+     * Converts the rendered SVG inside a container into a data URL safe
+     * for use on file:// origins (no Blob, no createObjectURL needed).
+     *
+     * Key steps:
+     *  1. Clone the SVG and stamp explicit width/height.
+     *  2. Strip any <foreignObject> nodes — they taint the canvas on
+     *     file:// and are only present when htmlLabels:true is used.
+     *     (With htmlLabels:false above this is a safety net.)
+     *  3. Inline a font-family style so text renders without external CSS.
+     *  4. Serialise with XMLSerializer then URI-encode — this works
+     *     identically on file://, http://, and https://.
+     */
+    function svgToDataUrl(svg) {
+      const vb   = svg.viewBox.baseVal;
+      const bbox = svg.getBoundingClientRect();
+      const w    = (vb && vb.width)  || bbox.width  || 1200;
+      const h    = (vb && vb.height) || bbox.height || 800;
+
+      const clone = svg.cloneNode(true);
+      clone.setAttribute('width',  w);
+      clone.setAttribute('height', h);
+      clone.setAttribute('xmlns',  'http://www.w3.org/2000/svg');
+      clone.setAttribute('xmlns:xlink', 'http://www.w3.org/1999/xlink');
+
+      // ── Remove foreignObject nodes (canvas-taint source) ──────────
+      clone.querySelectorAll('foreignObject').forEach(fo => {
+        // Attempt to salvage the visible text before removing
+        const text = fo.textContent.trim();
+        if (text) {
+          const svgText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+          svgText.setAttribute('x', fo.getAttribute('x') || '0');
+          svgText.setAttribute('y', parseFloat(fo.getAttribute('y') || '0') + 14 + '');
+          svgText.setAttribute('font-size', '13');
+          svgText.setAttribute('font-family', 'Arial, sans-serif');
+          svgText.setAttribute('fill', '#333');
+          svgText.textContent = text;
+          fo.parentNode.replaceChild(svgText, fo);
+        } else {
+          fo.remove();
+        }
+      });
+
+      // ── Inline minimal style ───────────────────────────────────────
+      const styleEl = document.createElementNS('http://www.w3.org/2000/svg', 'style');
+      styleEl.textContent = [
+        '* { font-family: Arial, Helvetica, sans-serif; }',
+        'text { font-family: Arial, Helvetica, sans-serif; }',
+        '.label { font-family: Arial, Helvetica, sans-serif; }',
+      ].join(' ');
+      clone.insertBefore(styleEl, clone.firstChild);
+
+      const xml = new XMLSerializer().serializeToString(clone);
+      return {
+        url: 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(xml),
+        w, h,
+      };
+    }
+
+    /**
+     * Renders an SVG data-URL onto a canvas and returns a Promise<canvas>.
+     * The canvas has a white background and is drawn at `scale` resolution.
+     */
+    function svgToCanvas(svgDataUrl, w, h, scale) {
+      return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas  = document.createElement('canvas');
+          canvas.width  = w * scale;
+          canvas.height = h * scale;
+          const ctx = canvas.getContext('2d');
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+          resolve(canvas);
+        };
+        img.onerror = (e) => reject(new Error('SVG image load failed. Open DevTools console for details.'));
+        img.src = svgDataUrl;
+      });
+    }
+
+    // ── PNG download ────────────────────────────────────────────────
+    async function downloadPNG(containerId, filename) {
+      const btn = event.currentTarget;
+      btn.classList.add('btn-spinning');
+      try {
+        const svg = document.getElementById(containerId).querySelector('svg');
+        if (!svg) throw new Error('Diagram not yet rendered. Please wait and try again.');
+
+        const { url, w, h } = svgToDataUrl(svg);
+        const canvas = await svgToCanvas(url, w, h, 3); // 3× = high-res
+
+        canvas.toBlob(blob => {
+          const a = document.createElement('a');
+          a.href = URL.createObjectURL(blob);
+          a.download = filename + '.png';
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          setTimeout(() => URL.revokeObjectURL(a.href), 10000);
+        }, 'image/png', 1.0);
+
+      } catch (err) {
+        alert('PNG export failed:\n' + err.message);
+        console.error('[TaxiGo PNG]', err);
+      } finally {
+        btn.classList.remove('btn-spinning');
+      }
+    }
+
+    // ── PDF download ────────────────────────────────────────────────
+    async function downloadPDF(containerId, filename, title) {
+      const btn = event.currentTarget;
+      btn.classList.add('btn-spinning');
+      try {
+        const svg = document.getElementById(containerId).querySelector('svg');
+        if (!svg) throw new Error('Diagram not yet rendered. Please wait and try again.');
+
+        const { url, w, h } = svgToDataUrl(svg);
+        const canvas  = await svgToCanvas(url, w, h, 2); // 2× for PDF
+        const dataUrl = canvas.toDataURL('image/png', 1.0);
+
+        const mmPerPx   = 0.264583;
+        const pageW     = w * mmPerPx;
+        const pageH     = h * mmPerPx;
+        const landscape = w >= h;
+
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF({
+          orientation: landscape ? 'l' : 'p',
+          unit: 'mm',
+          format: [pageW, pageH],
+        });
+
+        doc.setFontSize(10);
+        doc.setTextColor(100, 100, 100);
+        doc.text('TaxiGo — ' + title, 6, 7);
+
+        const pad  = 4;
+        doc.addImage(dataUrl, 'PNG', pad, 12, pageW - pad * 2, pageH - 16);
+        doc.save(filename + '.pdf');
+
+      } catch (err) {
+        alert('PDF export failed:\n' + err.message);
+        console.error('[TaxiGo PDF]', err);
+      } finally {
+        btn.classList.remove('btn-spinning');
+      }
+    }
+
+  </script>
+
+</body>
+</html>
